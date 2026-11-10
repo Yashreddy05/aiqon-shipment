@@ -6,6 +6,7 @@ contingency recommendations, and interactive logistics reasoning.
 
 from __future__ import annotations
 import os
+import importlib
 from typing import Optional, Dict, Any, List
 
 # Prefer modern google.genai SDK; fallback to google.generativeai if needed
@@ -16,7 +17,7 @@ try:
     GENAI_AVAILABLE = True
 except ImportError:
     try:
-        import google.generativeai as legacy_genai
+        legacy_genai = importlib.import_module("google.generativeai")
         GENAI_AVAILABLE = True
     except ImportError:
         GENAI_AVAILABLE = False
@@ -27,10 +28,10 @@ from src.models.schemas import Shipment, RecommendationResult, Route
 class GeminiRouteAdvisor:
     """Generative AI assistant for logistics operators powered by Google Gemini."""
 
-    def __init__(self, api_key: Optional[str] = None, model_name: str = "gemini-3.5-flash"):
+    def __init__(self, api_key: Optional[str] = None, model_name: str = "gemini-3.5-flash", *args, **kwargs):
         self.api_key = api_key or os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+        self.model_name = kwargs.get("model_name", model_name)
         self.client = None
-        self.model_name = model_name
 
         if GENAI_AVAILABLE and self.api_key:
             try:

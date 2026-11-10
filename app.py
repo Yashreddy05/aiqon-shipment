@@ -162,10 +162,14 @@ selected_gemini_model = st.sidebar.selectbox(
 enable_gemini = st.sidebar.toggle("Enable Gemini AI Copilot", value=bool(gemini_key_input))
 
 # Initialize Gemini Advisor with selected model
-gemini_advisor = GeminiRouteAdvisor(
-    api_key=gemini_key_input if enable_gemini else None,
-    model_name=selected_gemini_model
-)
+try:
+    gemini_advisor = GeminiRouteAdvisor(
+        api_key=gemini_key_input if enable_gemini else None,
+        model_name=selected_gemini_model
+    )
+except TypeError:
+    gemini_advisor = GeminiRouteAdvisor(api_key=gemini_key_input if enable_gemini else None)
+    gemini_advisor.model_name = selected_gemini_model
 
 # ----------------- EXECUTE RECOMMENDATION -----------------
 recommendation = optimizer.recommend(
