@@ -223,9 +223,12 @@ with tab1:
     st.markdown("### 🤖 Gemini AI Generative Dispatcher Copilot")
     if gemini_advisor.is_available():
         if st.button(f"✨ Generate Live Gemini Executive Briefing ({selected_gemini_model})"):
-            with st.spinner(f"{selected_gemini_model} is analyzing trade-offs, geopolitical chokepoints, and carrier SLAs..."):
-                gemini_text = gemini_advisor.generate_executive_briefing(recommendation, shipment)
-                st.session_state["gemini_briefing"] = gemini_text
+            with st.spinner(f"Gemini is analyzing trade-offs, geopolitical chokepoints, and carrier SLAs..."):
+                try:
+                    gemini_text = gemini_advisor.generate_executive_briefing(recommendation, shipment)
+                    st.session_state["gemini_briefing"] = gemini_text
+                except Exception as e:
+                    st.error(f"⚠️ Gemini API Notice: {e}")
 
         if "gemini_briefing" in st.session_state:
             st.markdown(st.session_state["gemini_briefing"])
@@ -235,9 +238,12 @@ with tab1:
         user_q = st.text_input("Ask a logistics question (e.g. 'Why did we reject the cheapest ocean route?', 'What if Suez Canal closes?')")
         if st.button("Ask Gemini"):
             if user_q:
-                with st.spinner(f"{selected_gemini_model} is reasoning..."):
-                    ans = gemini_advisor.answer_operator_question(user_q, recommendation, shipment)
-                    st.write(ans)
+                with st.spinner(f"Gemini is reasoning..."):
+                    try:
+                        ans = gemini_advisor.answer_operator_question(user_q, recommendation, shipment)
+                        st.write(ans)
+                    except Exception as e:
+                        st.error(f"⚠️ Gemini API Notice: {e}")
     else:
         st.info("💡 **Gemini Copilot is ready!** Enter your free Gemini API key in the left sidebar to unlock live GenAI executive briefings and interactive logistics Q&A.")
 

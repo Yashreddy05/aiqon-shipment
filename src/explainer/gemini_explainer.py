@@ -6,7 +6,6 @@ contingency recommendations, and interactive logistics reasoning.
 
 from __future__ import annotations
 import os
-import importlib
 from typing import Optional, Dict, Any, List
 
 # Prefer modern google.genai SDK; fallback to google.generativeai if needed
@@ -17,7 +16,7 @@ try:
     GENAI_AVAILABLE = True
 except ImportError:
     try:
-        legacy_genai = importlib.import_module("google.generativeai")
+        import google.generativeai as legacy_genai
         GENAI_AVAILABLE = True
     except ImportError:
         GENAI_AVAILABLE = False
@@ -28,7 +27,7 @@ from src.models.schemas import Shipment, RecommendationResult, Route
 class GeminiRouteAdvisor:
     """Generative AI assistant for logistics operators powered by Google Gemini."""
 
-    def __init__(self, api_key: Optional[str] = None, model_name: str = "gemini-3.5-flash", *args, **kwargs):
+    def __init__(self, api_key: Optional[str] = None, model_name: str = "gemini-2.0-flash", *args, **kwargs):
         self.api_key = api_key or os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
         self.model_name = kwargs.get("model_name", model_name)
         self.client = None
@@ -49,7 +48,13 @@ class GeminiRouteAdvisor:
 
     def _call_gemini(self, prompt: str) -> str:
         """Invokes Gemini with automatic model fallback if a model is deprecated or unavailable."""
-        candidate_models = [self.model_name, "gemini-3.5-flash", "gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"]
+        candidate_models = [
+            self.model_name,
+            "gemini-2.0-flash",
+            "gemini-1.5-flash",
+            "gemini-1.5-pro",
+            "gemini-2.5-flash"
+        ]
         # Remove duplicates while preserving order
         unique_models = list(dict.fromkeys(candidate_models))
 
@@ -61,21 +66,18 @@ class GeminiRouteAdvisor:
                         model=m,
                         contents=prompt
                     )
-                    return response.text
+                    if hasattr(response, "text") and response.text:
+                        return response.text
                 else:
                     gen_model = legacy_genai.GenerativeModel(m)
                     response = gen_model.generate_content(prompt)
-                    return response.text
+                    if hasattr(response, "text") and response.text:
+                        return response.text
             except Exception as e:
                 last_error = e
-                # If model is deprecated or not found (404 / 400), try next candidate model
-                if "not found" in str(e).lower() or "deprecated" in str(e).lower() or "404" in str(e):
-                    continue
-                else:
-                    raise e
+                continue
 
-        # If all candidates failed, raise last error
-        raise last_error
+        return f"*(Gemini API invocation note: All model attempts failed. Last error: {str(last_error)}. Displaying algorithmic rule-based rationale.)*"
 
     def generate_executive_briefing(
         self,
