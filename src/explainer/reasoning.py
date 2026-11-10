@@ -122,24 +122,24 @@ class RouteDecisionExplainer:
             elif cost_diff > 0 and time_diff < 0:
                 sentences.append(
                     f"Compared to the runner-up ('{runner.name}'), this option cuts transit time by {abs(time_diff):.1f} days "
-                    f"for an incremental freight investment of ${abs(cost_diff):,.2f} ({abs(trade_off['cost_difference_pct'])}%), "
-                    f"yielding a favorable trade-off of ${trade_off['marginal_cost_per_day_saved']:,.2f} per day saved."
+                    f"for an incremental freight investment of \\${abs(cost_diff):,.2f} ({abs(trade_off['cost_difference_pct'])}%), "
+                    f"yielding a favorable trade-off of \\${trade_off['marginal_cost_per_day_saved']:,.2f} per day saved."
                 )
             elif cost_diff > 0 and risk_diff < 0:
                 sentences.append(
-                    f"While costing ${abs(cost_diff):,.2f} more than '{runner.name}', it substantially mitigates operational risk "
+                    f"While costing \\${abs(cost_diff):,.2f} more than '{runner.name}', it substantially mitigates operational risk "
                     f"({rec.composite_risk_score:.2f} vs {runner.composite_risk_score:.2f}) and cuts delay probability "
                     f"from {runner.overall_delay_probability*100:.1f}% down to {rec.overall_delay_probability*100:.1f}%."
                 )
             elif cost_diff < 0 and time_diff <= 0:
                 sentences.append(
-                    f"This route strictly dominates the runner-up ('{runner.name}'), saving ${abs(cost_diff):,.2f} "
+                    f"This route strictly dominates the runner-up ('{runner.name}'), saving \\${abs(cost_diff):,.2f} "
                     f"while delivering {abs(time_diff):.1f} days faster."
                 )
             else:
                 sentences.append(
                     f"This route achieves a superior multi-criteria score by balancing a transit time of {rec.total_transit_time_days:.1f} days "
-                    f"against a total cost of ${rec.total_cost_usd:,.2f} and risk index of {rec.composite_risk_score:.2f}."
+                    f"against a total cost of \\${rec.total_cost_usd:,.2f} and risk index of {rec.composite_risk_score:.2f}."
                 )
 
         # 3. Why Extreme Routes Were Rejected
@@ -148,7 +148,7 @@ class RouteDecisionExplainer:
             time_saved = cheapest.total_transit_time_days - rec.total_transit_time_days
             risk_avoided = cheapest.composite_risk_score - rec.composite_risk_score
             sentences.append(
-                f"The cheapest alternative ('{cheapest.name}' at ${cheapest.total_cost_usd:,.2f}) was rejected because "
+                f"The cheapest alternative ('{cheapest.name}' at \\${cheapest.total_cost_usd:,.2f}) was rejected because "
                 f"it incurs higher disruption risk ({cheapest.composite_risk_score:.2f}) and {cheapest.overall_delay_probability*100:.1f}% delay probability"
                 + (f", adding {time_saved:.1f} days in transit." if time_saved > 0 else ".")
             )
@@ -158,7 +158,7 @@ class RouteDecisionExplainer:
             if premium > 0:
                 sentences.append(
                     f"The fastest option ('{fastest.name}' at {fastest.total_transit_time_days:.1f} days) was bypassed "
-                    f"due to an excessive cost premium of ${premium:,.2f} ({((premium)/rec.total_cost_usd)*100:.0f}% higher) "
+                    f"due to an excessive cost premium of \\${premium:,.2f} ({((premium)/rec.total_cost_usd)*100:.0f}% higher) "
                     f"which exceeds the required service level."
                 )
 

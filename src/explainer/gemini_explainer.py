@@ -11,12 +11,12 @@ from typing import Optional, Dict, Any
 # Prefer modern google.genai SDK; fallback to google.generativeai if needed
 USE_MODERN_SDK = False
 try:
-    from google import genai
+    from google import genai  # type: ignore[import-not-found]
     USE_MODERN_SDK = True
     GENAI_AVAILABLE = True
 except ImportError:
     try:
-        import google.generativeai as legacy_genai
+        import google.generativeai as legacy_genai  # type: ignore[import-not-found]
         GENAI_AVAILABLE = True
     except ImportError:
         GENAI_AVAILABLE = False
@@ -30,7 +30,7 @@ class GeminiRouteAdvisor:
     def __init__(self, api_key: Optional[str] = None):
         self.api_key = api_key or os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
         self.client = None
-        self.model_name = "gemini-2.5-flash"
+        self.model_name = "gemini-3.5-flash"
 
         if GENAI_AVAILABLE and self.api_key:
             try:
@@ -38,7 +38,7 @@ class GeminiRouteAdvisor:
                     self.client = genai.Client(api_key=self.api_key)
                 else:
                     legacy_genai.configure(api_key=self.api_key)
-                    self.client = legacy_genai.GenerativeModel("gemini-1.5-flash")
+                    self.client = legacy_genai.GenerativeModel("gemini-3.5-flash")
             except Exception as e:
                 print(f"Warning: Failed to initialize Gemini client: {e}")
                 self.client = None
@@ -51,7 +51,7 @@ class GeminiRouteAdvisor:
         if USE_MODERN_SDK:
             # Modern google.genai syntax
             response = self.client.models.generate_content(
-                model="gemini-2.5-flash",
+                model="gemini-3.5-flash",
                 contents=prompt
             )
             return response.text
@@ -72,6 +72,12 @@ class GeminiRouteAdvisor:
         rec = recommendation.recommended_route
         runner = recommendation.runner_up_route
         sim = rec.simulation_stats or {}
+
+        runner_name = runner.name if runner else "None"
+        runner_cost = f"${runner.total_cost_usd:,.2f}" if runner else "N/A"
+        runner_time = f"{runner.total_transit_time_days:.1f} days" if runner else "N/A"
+        runner_delay = f"{runner.overall_delay_probability*100:.1f}%" if runner else "N/A"
+        runner_risk = f"{runner.composite_risk_score:.3f}" if runner else "N/A"
 
         prompt = f"""
 You are the Chief Freight Operations Officer at a global logistics firm (similar to Flexport / Maersk / Aiqon).
@@ -100,11 +106,11 @@ Analyze this multi-objective shipment routing decision and provide a sharp, prof
 - Route Legs: {', '.join([f"{leg.mode.value} via {leg.carrier} ({leg.origin}->{leg.destination})" for leg in rec.legs])}
 
 ### RUNNER-UP ROUTE
-- Name: {runner.name if runner else 'None'}
-- Cost: ${runner.total_cost_usd:,.2f if runner else 0}
-- Transit Time: {runner.total_transit_time_days:.1f if runner else 0} days
-- Delay Probability: {runner.overall_delay_probability*100:.1f if runner else 0}%
-- Composite Risk: {runner.composite_risk_score:.3f if runner else 0}
+- Name: {runner_name}
+- Cost: {runner_cost}
+- Transit Time: {runner_time}
+- Delay Probability: {runner_delay}
+- Composite Risk: {runner_risk}
 
 ### YOUR BRIEFING MUST COVER:
 1. **Executive Decision Rationale**: Why this route is the superior choice under the {recommendation.operator_profile} policy, specifically addressing the trade-off against cheaper or faster alternatives.
