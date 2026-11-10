@@ -1,5 +1,6 @@
 """
 Interactive Streamlit Application for Aiqon Multi-Objective Shipment Route Optimizer.
+Equipped with Gemini AI Copilot for Generative Natural Language Dispatcher Briefings.
 """
 
 from __future__ import annotations
@@ -19,6 +20,7 @@ from src.models.schemas import (
 from src.data.generator import RouteGenerator
 from src.optimization.scoring import RouteOptimizer
 from src.explainer.reasoning import RouteDecisionExplainer
+from src.explainer.gemini_explainer import GeminiRouteAdvisor
 from src.evaluation.benchmark import BenchmarkSuite
 
 # Page configuration
@@ -45,6 +47,14 @@ st.markdown("""
         padding: 24px;
         border-radius: 12px;
         margin-bottom: 24px;
+    }
+    .gemini-banner {
+        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 10px;
+        margin-top: 18px;
+        margin-bottom: 18px;
     }
     .badge {
         display: inline-block;
@@ -136,6 +146,19 @@ active_weights.max_budget_usd = max_budget
 active_weights.max_transit_days = max_transit
 active_weights.max_acceptable_risk = max_risk
 
+st.sidebar.markdown("---")
+st.sidebar.subheader("🤖 Google Gemini AI Copilot")
+gemini_key_input = st.sidebar.text_input(
+    "Gemini API Key (Optional)",
+    type="password",
+    value=os.getenv("GEMINI_API_KEY", ""),
+    help="Get a free key from https://aistudio.google.com"
+)
+enable_gemini = st.sidebar.toggle("Enable Gemini 1.5 Flash Copilot", value=bool(gemini_key_input))
+
+# Initialize Gemini Advisor
+gemini_advisor = GeminiRouteAdvisor(api_key=gemini_key_input if enable_gemini else None)
+
 # ----------------- EXECUTE RECOMMENDATION -----------------
 recommendation = optimizer.recommend(
     shipment=shipment,
@@ -182,6 +205,29 @@ with tab1:
 
     st.markdown("### 📋 Operator Decision Reasoning")
     st.info(recommendation.summary_explanation)
+
+    # Gemini AI Generative Briefing Section
+    st.markdown("---")
+    st.markdown("### 🤖 Gemini AI Generative Dispatcher Copilot")
+    if gemini_advisor.is_available():
+        if st.button("✨ Generate Live Gemini 1.5 Flash Executive Briefing"):
+            with st.spinner("Gemini 1.5 Flash is analyzing trade-offs, geopolitical chokepoints, and carrier SLAs..."):
+                gemini_text = gemini_advisor.generate_executive_briefing(recommendation, shipment)
+                st.session_state["gemini_briefing"] = gemini_text
+
+        if "gemini_briefing" in st.session_state:
+            st.markdown(st.session_state["gemini_briefing"])
+
+        # Interactive Q&A with Gemini
+        st.markdown("#### 💬 Ask Gemini Copilot a Question about this Route:")
+        user_q = st.text_input("Ask a logistics question (e.g. 'Why did we reject the cheapest ocean route?', 'What if Suez Canal closes?')")
+        if st.button("Ask Gemini"):
+            if user_q:
+                with st.spinner("Gemini is reasoning..."):
+                    ans = gemini_advisor.answer_operator_question(user_q, recommendation, shipment)
+                    st.write(ans)
+    else:
+        st.info("💡 **Gemini Copilot is ready!** Enter your free Gemini API key in the left sidebar to unlock live GenAI executive briefings and interactive logistics Q&A.")
 
     # Head-to-Head Comparison Card
     if recommendation.runner_up_route:
