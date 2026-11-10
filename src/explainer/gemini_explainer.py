@@ -6,17 +6,17 @@ contingency recommendations, and interactive logistics reasoning.
 
 from __future__ import annotations
 import os
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 
 # Prefer modern google.genai SDK; fallback to google.generativeai if needed
 USE_MODERN_SDK = False
 try:
-    from google import genai  # type: ignore[import-not-found]
+    from google import genai
     USE_MODERN_SDK = True
     GENAI_AVAILABLE = True
 except ImportError:
     try:
-        import google.generativeai as legacy_genai  # type: ignore[import-not-found]
+        import google.generativeai as legacy_genai
         GENAI_AVAILABLE = True
     except ImportError:
         GENAI_AVAILABLE = False
@@ -27,10 +27,10 @@ from src.models.schemas import Shipment, RecommendationResult, Route
 class GeminiRouteAdvisor:
     """Generative AI assistant for logistics operators powered by Google Gemini."""
 
-    def __init__(self, api_key: Optional[str] = None):
+    def __init__(self, api_key: Optional[str] = None, model_name: str = "gemini-3.5-flash"):
         self.api_key = api_key or os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
         self.client = None
-        self.model_name = "gemini-3.5-flash"
+        self.model_name = model_name
 
         if GENAI_AVAILABLE and self.api_key:
             try:
@@ -38,7 +38,7 @@ class GeminiRouteAdvisor:
                     self.client = genai.Client(api_key=self.api_key)
                 else:
                     legacy_genai.configure(api_key=self.api_key)
-                    self.client = legacy_genai.GenerativeModel("gemini-3.5-flash")
+                    self.client = legacy_genai.GenerativeModel(self.model_name)
             except Exception as e:
                 print(f"Warning: Failed to initialize Gemini client: {e}")
                 self.client = None
@@ -47,18 +47,34 @@ class GeminiRouteAdvisor:
         return self.client is not None
 
     def _call_gemini(self, prompt: str) -> str:
-        """Helper to invoke Gemini across SDK versions."""
-        if USE_MODERN_SDK:
-            # Modern google.genai syntax
-            response = self.client.models.generate_content(
-                model="gemini-3.5-flash",
-                contents=prompt
-            )
-            return response.text
-        else:
-            # Legacy syntax
-            response = self.client.generate_content(prompt)
-            return response.text
+        """Invokes Gemini with automatic model fallback if a model is deprecated or unavailable."""
+        candidate_models = [self.model_name, "gemini-3.5-flash", "gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"]
+        # Remove duplicates while preserving order
+        unique_models = list(dict.fromkeys(candidate_models))
+
+        last_error = None
+        for m in unique_models:
+            try:
+                if USE_MODERN_SDK:
+                    response = self.client.models.generate_content(
+                        model=m,
+                        contents=prompt
+                    )
+                    return response.text
+                else:
+                    gen_model = legacy_genai.GenerativeModel(m)
+                    response = gen_model.generate_content(prompt)
+                    return response.text
+            except Exception as e:
+                last_error = e
+                # If model is deprecated or not found (404 / 400), try next candidate model
+                if "not found" in str(e).lower() or "deprecated" in str(e).lower() or "404" in str(e):
+                    continue
+                else:
+                    raise e
+
+        # If all candidates failed, raise last error
+        raise last_error
 
     def generate_executive_briefing(
         self,

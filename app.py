@@ -154,10 +154,18 @@ gemini_key_input = st.sidebar.text_input(
     value=os.getenv("GEMINI_API_KEY", ""),
     help="Get a free key from https://aistudio.google.com"
 )
-enable_gemini = st.sidebar.toggle("Enable Gemini 1.5 Flash Copilot", value=bool(gemini_key_input))
+selected_gemini_model = st.sidebar.selectbox(
+    "Gemini Model",
+    ["gemini-3.5-flash", "gemini-2.5-flash", "gemini-1.5-flash", "gemini-2.0-flash"],
+    index=0
+)
+enable_gemini = st.sidebar.toggle("Enable Gemini AI Copilot", value=bool(gemini_key_input))
 
-# Initialize Gemini Advisor
-gemini_advisor = GeminiRouteAdvisor(api_key=gemini_key_input if enable_gemini else None)
+# Initialize Gemini Advisor with selected model
+gemini_advisor = GeminiRouteAdvisor(
+    api_key=gemini_key_input if enable_gemini else None,
+    model_name=selected_gemini_model
+)
 
 # ----------------- EXECUTE RECOMMENDATION -----------------
 recommendation = optimizer.recommend(
@@ -210,8 +218,8 @@ with tab1:
     st.markdown("---")
     st.markdown("### 🤖 Gemini AI Generative Dispatcher Copilot")
     if gemini_advisor.is_available():
-        if st.button("✨ Generate Live Gemini 1.5 Flash Executive Briefing"):
-            with st.spinner("Gemini 1.5 Flash is analyzing trade-offs, geopolitical chokepoints, and carrier SLAs..."):
+        if st.button(f"✨ Generate Live Gemini Executive Briefing ({selected_gemini_model})"):
+            with st.spinner(f"{selected_gemini_model} is analyzing trade-offs, geopolitical chokepoints, and carrier SLAs..."):
                 gemini_text = gemini_advisor.generate_executive_briefing(recommendation, shipment)
                 st.session_state["gemini_briefing"] = gemini_text
 
@@ -223,7 +231,7 @@ with tab1:
         user_q = st.text_input("Ask a logistics question (e.g. 'Why did we reject the cheapest ocean route?', 'What if Suez Canal closes?')")
         if st.button("Ask Gemini"):
             if user_q:
-                with st.spinner("Gemini is reasoning..."):
+                with st.spinner(f"{selected_gemini_model} is reasoning..."):
                     ans = gemini_advisor.answer_operator_question(user_q, recommendation, shipment)
                     st.write(ans)
     else:
