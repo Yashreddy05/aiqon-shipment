@@ -174,11 +174,6 @@ def generate_report():
         <div class="header-title">Technical Report: Multi-Objective Shipment Route Optimizer</div>
         <div class="header-subtitle">Balancing Freight Cost, Transit Time, and Disruption Risk Under Uncertainty</div>
     </div>
-    <div class="header-meta">
-        <strong>Aiqon AI Internship Assignment</strong><br>
-        Candidate Submission • 3-Day Project<br>
-        Date: November 2026
-    </div>
 </div>
 
 <h2>1. Introduction & The Practical Problem</h2>
@@ -332,12 +327,6 @@ def generate_report():
     By combining Pareto non-dominated filtering, TOPSIS multi-criteria ranking, and stochastic Monte Carlo delay modeling, 
     this project provides an actionable, defensible routing system that prevents expensive disruption traps while providing logistics operators with clear, transparent reasoning.
 </p>
-
-<div style="margin-top: 10px; border-top: 1px solid #cbd5e1; padding-top: 5px; font-size: 7.2pt; color: #64748b; display: flex; justify-content: space-between;">
-    <span>Aiqon AI Internship Assignment Submission</span>
-    <span>Repository: <code>aiqon_shipment_optimizer</code></span>
-    <span>Submission Email: info@aiqon.in</span>
-</div>
 
 </body>
 </html>
