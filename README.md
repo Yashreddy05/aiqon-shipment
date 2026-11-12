@@ -217,16 +217,4 @@ Execute the comprehensive test suite (all 13 tests passing):
 ```bash
 pytest -v
 ```
-
----
-
-## 📦 Deliverables & Submission Checklist
-
-- [x] **Code Repository**: Full modular, clean, and tested Python codebase.
-- [x] **Technical Report (3 Pages PDF)**: Attached and located at `report/Aiqon_Technical_Report_Shipment_Routing.pdf`.
-- [x] **Interactive Demo**: Streamlit web application (`app.py`) and Rich CLI (`cli.py`).
-- [x] **Automated Tests**: 100% test coverage on optimization, Pareto sorting, and explainability.
-- [x] **Submission Email**: `info@aiqon.in`
-
----
 *Built with ❤️ for the Aiqon AI Internship Assignment.*
