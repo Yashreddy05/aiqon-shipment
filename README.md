@@ -49,7 +49,6 @@ flowchart TD
         I --> J[Streamlit Interactive Web UI]
         I --> K[Rich Command-Line CLI]
         I --> L[FastAPI REST API Service]
-        I --> M[Compiled 3-Page PDF Technical Report]
     end
 ```
 
@@ -149,11 +148,9 @@ aiqon_shipment_optimizer/
 │   ├── test_explainer.py        # Narrative & trade-off delta tests
 │   └── test_api.py              # REST API endpoint tests
 ├── report/
-│   ├── technical_report.html    # Formatted HTML Technical Report
-│   └── Aiqon_Technical_Report_Shipment_Routing.pdf # 3-page publication PDF
+│   └── Aiqon_Technical_Report_Shipment_Routing.pdf # 3-page Technical Report (PDF)
 ├── app.py                       # Interactive Streamlit Web Dashboard
 ├── cli.py                       # Rich CLI interface
-├── generate_report.py           # Technical report compilation script
 ├── requirements.txt             # Project dependencies
 └── README.md                    # Project documentation
 ```
@@ -216,25 +213,17 @@ Interactive API docs are available at `http://localhost:8000/docs`:
 - `GET /benchmark` &mdash; Run and retrieve benchmark evaluation results
 
 ### 5. Run the Pytest Test Suite
-Execute the comprehensive test suite (all 12 tests passing):
+Execute the comprehensive test suite (all 13 tests passing):
 ```bash
 pytest -v
 ```
-
-### 6. Re-compile the PDF Technical Report
-Generate the 3-page publication-quality PDF report:
-```bash
-python generate_report.py
-```
-The compiled PDF report will be saved to:
-`report/Aiqon_Technical_Report_Shipment_Routing.pdf`
 
 ---
 
 ## 📦 Deliverables & Submission Checklist
 
 - [x] **Code Repository**: Full modular, clean, and tested Python codebase.
-- [x] **Technical Report (3 Pages PDF)**: Located at `report/Aiqon_Technical_Report_Shipment_Routing.pdf`.
+- [x] **Technical Report (3 Pages PDF)**: Attached and located at `report/Aiqon_Technical_Report_Shipment_Routing.pdf`.
 - [x] **Interactive Demo**: Streamlit web application (`app.py`) and Rich CLI (`cli.py`).
 - [x] **Automated Tests**: 100% test coverage on optimization, Pareto sorting, and explainability.
 - [x] **Submission Email**: `info@aiqon.in`

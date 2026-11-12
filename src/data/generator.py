@@ -7,7 +7,7 @@ cost, transit time, delay probability, and multi-factor risk profiles.
 from __future__ import annotations
 import json
 import random
-from typing import List, Dict, Tuple
+from typing import Any, List, Dict, Tuple
 import pandas as pd
 from src.models.schemas import (
     TransportMode,
